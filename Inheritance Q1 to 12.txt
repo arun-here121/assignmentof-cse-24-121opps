@@ -1,0 +1,719 @@
+// =============================
+// Q1 – publication, book, tape
+// File: q1_publication_book_tape.cpp
+// =============================
+#include <iostream>
+#include <string>
+using namespace std;
+
+class publication {
+protected:
+    string title;
+    float  price;
+public:
+    void getdata() {
+        cout << "Enter title: ";
+        getline(cin >> ws, title);
+        cout << "Enter price: ";
+        cin >> price;
+    }
+    void putdata() const {
+        cout << "Title: " << title << ", Price: " << price;
+    }
+};
+
+class book : public publication {
+private:
+    int page_count;
+public:
+    void getdata() {
+        publication::getdata();
+        cout << "Enter page count: ";
+        cin >> page_count;
+    }
+    void putdata() const {
+        publication::putdata();
+        cout << ", Pages: " << page_count << endl;
+    }
+};
+
+class tape : public publication {
+private:
+    float play_time;
+public:
+    void getdata() {
+        publication::getdata();
+        cout << "Enter playing time (minutes): ";
+        cin >> play_time;
+    }
+    void putdata() const {
+        publication::putdata();
+        cout << ", Playing time: " << play_time << " minutes" << endl;
+    }
+};
+
+int main_q1() {
+    book b1; tape t1;
+    cout << "--- Q1: Enter book data ---\n"; b1.getdata();
+    cout << "--- Q1: Enter tape data ---\n"; t1.getdata();
+    cout << "\n[Q1] Book:\n"; b1.putdata();
+    cout << "[Q1] Tape:\n"; t1.putdata();
+    return 0;
+}
+
+
+// =============================
+// Q2 – Pstring protected from overflow
+// File: q2_pstring.cpp
+// =============================
+#include <cstring>
+
+class StringBase {
+protected:
+    enum { SZ = 80 };
+    char str[SZ];
+public:
+    StringBase() { str[0] = '\0'; }
+    StringBase(const char* s) { strncpy(str, s, SZ-1); str[SZ-1] = '\0'; }
+    void show() const { cout << str; }
+    const char* get() const { return str; }
+};
+
+class Pstring : public StringBase {
+public:
+    Pstring() : StringBase() {}
+    Pstring(const char* s) {
+        size_t len = strlen(s);
+        if (len >= SZ) { strncpy(str, s, SZ-1); str[SZ-1] = '\0'; }
+        else strcpy(str, s);
+    }
+};
+
+int main_q2() {
+    cout << "\n--- Q2: Pstring test ---\n";
+    const char* shortStr = "Short string";
+    const char* longStr =
+        "This string will surely exceed the width of the screen, which SZ represents.";
+    Pstring s1(shortStr), s2(longStr);
+    cout << "Short : "; s1.show(); cout << endl;
+    cout << "Long  : "; s2.show(); cout << endl;
+    return 0;
+}
+
+
+// =============================
+// Q3 – publication + sales, book, tape
+// File: q3_publication_sales.cpp
+// =============================
+
+class sales {
+protected:
+    float sale[3];
+public:
+    void getdata() {
+        cout << "Enter sales for last 3 months: ";
+        for (int i = 0; i < 3; ++i) cin >> sale[i];
+    }
+    void putdata() const {
+        cout << ", Sales (3 months): ";
+        for (int i = 0; i < 3; ++i)
+            cout << sale[i] << (i<2?',':' ');
+        cout << endl;
+    }
+};
+
+class book2 : public publication, public sales {
+private:
+    int page_count;
+public:
+    void getdata() {
+        publication::getdata();
+        cout << "Enter page count: ";
+        cin >> page_count;
+        sales::getdata();
+    }
+    void putdata() const {
+        publication::putdata();
+        cout << ", Pages: " << page_count;
+        sales::putdata();
+    }
+};
+
+class tape2 : public publication, public sales {
+private:
+    float play_time;
+public:
+    void getdata() {
+        publication::getdata();
+        cout << "Enter playing time (minutes): ";
+        cin >> play_time;
+        sales::getdata();
+    }
+    void putdata() const {
+        publication::putdata();
+        cout << ", Playing time: " << play_time << " minutes";
+        sales::putdata();
+    }
+};
+
+int main_q3() {
+    cout << "\n--- Q3: book2 and tape2 with sales ---\n";
+    book2 b; tape2 t;
+    cout << "Enter book2 data:\n"; b.getdata();
+    cout << "Enter tape2 data:\n"; t.getdata();
+    cout << "\n[Q3] Book2:\n"; b.putdata();
+    cout << "[Q3] Tape2:\n"; t.putdata();
+    return 0;
+}
+
+
+// =============================
+// Q4 – disk class (CD/DVD) from publication
+// File: q4_disk.cpp
+// =============================
+
+class disk : public publication {
+public:
+    enum dtype { CD, DVD };
+private:
+    dtype diskType;
+public:
+    void getdata() {
+        publication::getdata();
+        char ch;
+        cout << "Enter disk type (c=CD, d=DVD): ";
+        cin >> ch;
+        diskType = (ch=='d'||ch=='D') ? DVD : CD;
+    }
+    void putdata() const {
+        publication::putdata();
+        cout << ", Disk type: " << (diskType==CD?"CD":"DVD") << endl;
+    }
+};
+
+int main_q4() {
+    cout << "\n--- Q4: disk test ---\n";
+    disk d;
+    d.getdata();
+    cout << "[Q4] Disk:\n"; d.putdata();
+    return 0;
+}
+
+
+// =============================
+// Q5 – employee2 with compensation and period
+// File: q5_employee2.cpp
+// =============================
+
+class employee {
+protected:
+    string name;
+    unsigned long number;
+public:
+    void getdata() {
+        cout << "Enter name: "; getline(cin >> ws, name);
+        cout << "Enter number: "; cin >> number;
+    }
+    void putdata() const {
+        cout << "Name: " << name << ", Number: " << number;
+    }
+};
+
+class employee2 : public employee {
+public:
+    enum period { HOURLY, WEEKLY, MONTHLY };
+private:
+    double compensation;
+    period pay_period;
+public:
+    void getdata() {
+        employee::getdata();
+        cout << "Enter compensation: "; cin >> compensation;
+        char ch; cout << "Enter period (h=hourly, w=weekly, m=monthly): "; cin >> ch;
+        if (ch=='h'||ch=='H') pay_period = HOURLY;
+        else if (ch=='w'||ch=='W') pay_period = WEEKLY;
+        else pay_period = MONTHLY;
+    }
+    void putdata() const {
+        employee::putdata();
+        cout << ", Compensation: " << compensation << ", Period: ";
+        if (pay_period==HOURLY) cout << "Hourly";
+        else if (pay_period==WEEKLY) cout << "Weekly";
+        else cout << "Monthly";
+        cout << endl;
+    }
+};
+
+class manager : public employee2 {
+private:
+    string title;
+    double dues;
+public:
+    void getdata() {
+        employee2::getdata();
+        cout << "Enter title: "; getline(cin >> ws, title);
+        cout << "Enter golf club dues: "; cin >> dues;
+    }
+    void putdata() const {
+        employee2::putdata();
+        cout << "Title: " << title << ", Dues: " << dues << endl;
+    }
+};
+
+class scientist : public employee2 {
+private:
+    int pubs;
+public:
+    void getdata() {
+        employee2::getdata();
+        cout << "Enter number of publications: "; cin >> pubs;
+    }
+    void putdata() const {
+        employee2::putdata();
+        cout << "Publications: " << pubs << endl;
+    }
+};
+
+class laborer : public employee2 {};
+
+int main_q5() {
+    cout << "\n--- Q5: employee2 hierarchy ---\n";
+    manager m; scientist s; laborer l;
+    cout << "Enter manager data:\n"; m.getdata();
+    cout << "Enter scientist data:\n"; s.getdata();
+    cout << "Enter laborer data:\n"; l.getdata();
+    cout << "\n[Q5] Manager:\n"; m.putdata();
+    cout << "[Q5] Scientist:\n"; s.putdata();
+    cout << "[Q5] Laborer:\n"; l.putdata();
+    return 0;
+}
+
+
+// =============================
+// Q6 – safehilo from safearay
+// File: q6_safehilo.cpp
+// =============================
+#include <cstdlib>
+
+class safearay {
+protected:
+    enum { MAX = 100 };
+    int arr[MAX];
+public:
+    safearay() { for (int i=0;i<MAX;++i) arr[i]=0; }
+    int& operator[](int i) {
+        if (i<0 || i>=MAX) { cout << "Index out of range\n"; exit(1); }
+        return arr[i];
+    }
+    const int& operator[](int i) const {
+        if (i<0 || i>=MAX) { cout << "Index out of range\n"; exit(1); }
+        return arr[i];
+    }
+};
+
+class safehilo : public safearay {
+private:
+    int low, high;
+public:
+    safehilo(int l, int h) : low(l), high(h) {
+        if (h < l || (h-l+1) > MAX) {
+            cout << "Invalid bounds\n"; exit(1);
+        }
+    }
+    int& operator[](int i) {
+        if (i < low || i > high) { cout << "Index out of range\n"; exit(1); }
+        return arr[i-low];
+    }
+    const int& operator[](int i) const {
+        if (i < low || i > high) { cout << "Index out of range\n"; exit(1); }
+        return arr[i-low];
+    }
+};
+
+int main_q6() {
+    cout << "\n--- Q6: safehilo test ---\n";
+    safehilo sh(100, 175);
+    for (int i=100;i<=175;++i) sh[i] = i-100;
+    cout << "sh[100] = " << sh[100] << ", sh[175] = " << sh[175] << endl;
+    return 0;
+}
+
+
+// =============================
+// Q7 – CountPost from Counter (prefix+postfix)
+// File: q7_countpost.cpp
+// =============================
+
+class Counter {
+protected:
+    unsigned int count;
+public:
+    Counter() : count(0) {}
+    Counter(unsigned int c) : count(c) {}
+    unsigned int get_count() const { return count; }
+    Counter operator++() { return Counter(++count); }
+    Counter operator--() { return Counter(--count); }
+};
+
+class CountPost : public Counter {
+public:
+    CountPost() : Counter() {}
+    CountPost(unsigned int c) : Counter(c) {}
+    CountPost operator++(int) { CountPost temp(*this); ++count; return temp; }
+    CountPost operator--(int) { CountPost temp(*this); --count; return temp; }
+};
+
+int main_q7() {
+    cout << "\n--- Q7: CountPost test ---\n";
+    CountPost c1(5);
+    cout << "Initial: " << c1.get_count() << endl;
+    cout << "Prefix ++: " << (++c1).get_count() << endl;
+    cout << "Postfix ++ returned: " << (c1++).get_count()
+         << ", after: " << c1.get_count() << endl;
+    cout << "Prefix --: " << (--c1).get_count() << endl;
+    cout << "Postfix -- returned: " << (c1--).get_count()
+         << ", after: " << c1.get_count() << endl;
+    return 0;
+}
+
+
+// =============================
+// Q8 – Pstring2 with left, mid, right
+// File: q8_pstring2_substrings.cpp
+// =============================
+
+class Pstring2 : public Pstring {
+public:
+    Pstring2() : Pstring() {}
+    Pstring2(const char* s) : Pstring(s) {}
+
+    Pstring2 left(const Pstring2& s1, int n) {
+        Pstring2 temp;
+        int len = strlen(s1.get());
+        if (n > len) n = len;
+        strncpy(temp.str, s1.get(), n);
+        temp.str[n] = '\0';
+        return temp;
+    }
+
+    Pstring2 mid(const Pstring2& s1, int start, int n) {
+        Pstring2 temp;
+        int len = strlen(s1.get());
+        if (start < 0) start = 0;
+        if (start >= len) { temp.str[0]='\0'; return temp; }
+        if (start + n > len) n = len - start;
+        strncpy(temp.str, s1.get()+start, n);
+        temp.str[n] = '\0';
+        return temp;
+    }
+
+    Pstring2 right(const Pstring2& s1, int n) {
+        Pstring2 temp;
+        int len = strlen(s1.get());
+        if (n > len) n = len;
+        strncpy(temp.str, s1.get()+(len-n), n);
+        temp.str[n] = '\0';
+        return temp;
+    }
+};
+
+int main_q8() {
+    cout << "\n--- Q8: Pstring2 substring demo ---\n";
+    Pstring2 s1("Inheritance and Pstring2 substring demo");
+    Pstring2 s2, s3, s4;
+    s2 = s2.left(s1, 10);
+    s3 = s3.mid(s1, 12, 8);
+    s4 = s4.right(s1, 4);
+    cout << "Original : "; s1.show(); cout << endl;
+    cout << "Left 10  : "; s2.show(); cout << endl;
+    cout << "Mid(12,8): "; s3.show(); cout << endl;
+    cout << "Right 4  : "; s4.show(); cout << endl;
+    return 0;
+}
+
+
+// =============================
+// Q9 – publication2 with date, book and tape
+// File: q9_publication2_date.cpp
+// =============================
+
+class date {
+private:
+    int d, m, y;
+public:
+    date(int dd=1,int mm=1,int yy=2000):d(dd),m(mm),y(yy){}
+    void getdate() { cout << "Enter day month year: "; cin >> d >> m >> y; }
+    void putdate() const { cout << d << '/' << m << '/' << y; }
+};
+
+class publication2 : public publication {
+protected:
+    date pubdate;
+public:
+    void getdata() {
+        publication::getdata();
+        cout << "Enter publication date:\n"; pubdate.getdate();
+    }
+    void putdata() const {
+        publication::putdata();
+        cout << ", Date: "; pubdate.putdate();
+    }
+};
+
+class book3 : public publication2 {
+private:
+    int page_count;
+public:
+    void getdata() {
+        publication2::getdata();
+        cout << "Enter page count: "; cin >> page_count;
+    }
+    void putdata() const {
+        publication2::putdata();
+        cout << ", Pages: " << page_count << endl;
+    }
+};
+
+class tape3 : public publication2 {
+private:
+    float play_time;
+public:
+    void getdata() {
+        publication2::getdata();
+        cout << "Enter playing time (minutes): "; cin >> play_time;
+    }
+    void putdata() const {
+        publication2::putdata();
+        cout << ", Playing time: " << play_time << " minutes" << endl;
+    }
+};
+
+int main_q9() {
+    cout << "\n--- Q9: publication2 with date ---\n";
+    book3 b; tape3 t;
+    cout << "Enter book data:\n"; b.getdata();
+    cout << "Enter tape data:\n"; t.getdata();
+    cout << "\n[Q9] Book:\n"; b.putdata();
+    cout << "[Q9] Tape:\n"; t.putdata();
+    return 0;
+}
+
+
+// =============================
+// Q10 – executive from manager
+// File: q10_executive.cpp
+// =============================
+
+class executive : public manager {
+private:
+    double bonus;
+    long   stock_shares;
+public:
+    void getdata() {
+        manager::getdata();
+        cout << "Enter yearly bonus: "; cin >> bonus;
+        cout << "Enter number of stock-option shares: "; cin >> stock_shares;
+    }
+    void putdata() const {
+        manager::putdata();
+        cout << ", Bonus: " << bonus << ", Shares: " << stock_shares << endl;
+    }
+};
+
+int main_q10() {
+    cout << "\n--- Q10: executive test ---\n";
+    executive e; e.getdata();
+    cout << "[Q10] Executive:\n"; e.putdata();
+    return 0;
+}
+
+
+// =============================
+// Q11 – pairStack from Stack2
+// File: q11_pairstack.cpp
+// =============================
+
+const int MAXSTACK = 100;
+
+class Stack2 {
+protected:
+    int st[MAXSTACK];
+    int top;
+public:
+    Stack2() : top(0) {}
+    void push(int var) {
+        if (top >= MAXSTACK) { cout << "Stack overflow\n"; exit(1); }
+        st[top++] = var;
+    }
+    int pop() {
+        if (top <= 0) { cout << "Stack underflow\n"; exit(1); }
+        return st[--top];
+    }
+};
+
+struct pairInt {
+    int x; int y;
+};
+
+class pairStack : public Stack2 {
+public:
+    void push(pairInt p) {
+        Stack2::push(p.x);
+        Stack2::push(p.y);
+    }
+    pairInt pop_pair() {
+        pairInt p;
+        p.y = Stack2::pop();
+        p.x = Stack2::pop();
+        return p;
+    }
+};
+
+int main_q11() {
+    cout << "\n--- Q11: pairStack test ---\n";
+    pairStack ps;
+    pairInt p1{10,20}, p2{30,40};
+    ps.push(p1); ps.push(p2);
+    pairInt r1 = ps.pop_pair();
+    cout << "Popped: (" << r1.x << ", " << r1.y << ")\n";
+    pairInt r2 = ps.pop_pair();
+    cout << "Popped: (" << r2.x << ", " << r2.y << ")\n";
+    return 0;
+}
+
+
+// =============================
+// Q12 – sterfrac from sterling (eighths of penny)
+// File: q12_sterfrac.cpp
+// =============================
+
+class sterling {
+protected:
+    long pounds;
+    int shillings;
+    int pence;
+    void normalize() {
+        long total_pence = pounds * 240L + shillings * 12L + pence;
+        if (total_pence < 0) total_pence = 0;
+        pounds = total_pence / 240L;
+        total_pence %= 240L;
+        shillings = static_cast<int>(total_pence / 12L);
+        pence = static_cast<int>(total_pence % 12L);
+    }
+public:
+    sterling(long p=0,int s=0,int d=0):pounds(p),shillings(s),pence(d){normalize();}
+    void getSterling() {
+        char ch;
+        cout << "Enter amount (p.s.d, e.g. 9.19.11): ";
+        cin >> pounds >> ch >> shillings >> ch >> pence;
+        normalize();
+    }
+    void putSterling() const {
+        cout << '\x9c' << pounds << '.' << shillings << '.' << pence;
+    }
+};
+
+class sterfrac : public sterling {
+private:
+    int eighths;
+    void normFrac() {
+        if (eighths >= 8 || eighths < 0) {
+            long extra_pence = eighths / 8;
+            eighths %= 8;
+            pence += static_cast<int>(extra_pence);
+            normalize();
+        }
+        if (eighths < 0) eighths = 0;
+    }
+public:
+    sterfrac() : sterling(), eighths(0) {}
+    sterfrac(long p,int s,int d,int e):sterling(p,s,d),eighths(e){normFrac();}
+    sterfrac(const sterling& s, int e=0) : sterling(s), eighths(e) { normFrac(); }
+
+    void get() {
+        char ch;
+        cout << "Enter amount (p.s.d and eighths)\n";
+        cout << "Pounds.shillings.pence: ";
+        cin >> pounds >> ch >> shillings >> ch >> pence;
+        cout << "Eighths of penny (0..7): ";
+        cin >> eighths;
+        normalize(); normFrac();
+    }
+
+    void put() const {
+        putSterling();
+        cout << '-' << eighths << "/8";
+    }
+
+    sterfrac operator+(const sterfrac& s2) const {
+        long total_pence1 = pounds * 240L + shillings * 12L + pence;
+        long total_pence2 = s2.pounds * 240L + s2.shillings * 12L + s2.pence;
+        long total_eighths1 = total_pence1 * 8L + eighths;
+        long total_eighths2 = total_pence2 * 8L + s2.eighths;
+        long sumE = total_eighths1 + total_eighths2;
+        long res_pence = sumE / 8L;
+        int res_eighths = static_cast<int>(sumE % 8L);
+        long p = res_pence / 240L;
+        long remP = res_pence % 240L;
+        int s = static_cast<int>(remP / 12L);
+        int d = static_cast<int>(remP % 12L);
+        return sterfrac(p, s, d, res_eighths);
+    }
+
+    sterfrac operator-(const sterfrac& s2) const {
+        long total_pence1 = pounds * 240L + shillings * 12L + pence;
+        long total_pence2 = s2.pounds * 240L + s2.shillings * 12L + s2.pence;
+        long total_eighths1 = total_pence1 * 8L + eighths;
+        long total_eighths2 = total_pence2 * 8L + s2.eighths;
+        long diffE = total_eighths1 - total_eighths2;
+        if (diffE < 0) diffE = 0;
+        long res_pence = diffE / 8L;
+        int res_eighths = static_cast<int>(diffE % 8L);
+        long p = res_pence / 240L;
+        long remP = res_pence % 240L;
+        int s = static_cast<int>(remP / 12L);
+        int d = static_cast<int>(remP % 12L);
+        return sterfrac(p, s, d, res_eighths);
+    }
+
+    sterfrac operator*(double x) const {
+        long total_pence1 = pounds * 240L + shillings * 12L + pence;
+        long double total_eighths1 = static_cast<long double>(total_pence1)*8.0L + eighths;
+        long double prodE = total_eighths1 * x;
+        long resE = static_cast<long>(prodE + 0.5L);
+        long res_pence = resE / 8L;
+        int res_eighths = static_cast<int>(resE % 8L);
+        long p = res_pence / 240L;
+        long remP = res_pence % 240L;
+        int s = static_cast<int>(remP / 12L);
+        int d = static_cast<int>(remP % 12L);
+        return sterfrac(p, s, d, res_eighths);
+    }
+
+    sterfrac operator/(double x) const {
+        long total_pence1 = pounds * 240L + shillings * 12L + pence;
+        long double total_eighths1 = static_cast<long double>(total_pence1)*8.0L + eighths;
+        long double quoE = total_eighths1 / x;
+        long resE = static_cast<long>(quoE + 0.5L);
+        long res_pence = resE / 8L;
+        int res_eighths = static_cast<int>(resE % 8L);
+        long p = res_pence / 240L;
+        long remP = res_pence % 240L;
+        int s = static_cast<int>(remP / 12L);
+        int d = static_cast<int>(remP % 12L);
+        return sterfrac(p, s, d, res_eighths);
+    }
+};
+
+int main_q12() {
+    cout << "\n--- Q12: sterfrac test ---\n";
+    sterfrac a, b, c;
+    cout << "Enter first sterfrac:\n"; a.get();
+    cout << "Enter second sterfrac:\n"; b.get();
+    c = a + b; cout << "a + b = "; c.put(); cout << endl;
+    c = a - b; cout << "a - b = "; c.put(); cout << endl;
+    c = a * 2.5; cout << "a * 2.5 = "; c.put(); cout << endl;
+    c = a / 3.0; cout << "a / 3 = "; c.put(); cout << endl;
+    return 0;
+}
+

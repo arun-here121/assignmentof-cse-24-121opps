@@ -1,0 +1,612 @@
+// =============================
+// C++ TEMPLATES & EXCEPTIONS - LAFORÉ STYLE SOLUTIONS
+// Questions 1 to 12 (core implementations)
+// =============================
+
+#include <iostream>
+#include <stdexcept>
+#include <cstring>
+#include <cctype>
+#include <cstdlib>
+#include <cmath>
+#include <fstream>
+using namespace std;
+
+// -------------------------------------------------
+// Q1 – avgArray template
+// File: q1_avgArray.cpp
+// -------------------------------------------------
+
+template <class T>
+double avgArray(const T arr[], int size) {
+    long double sum = 0.0;
+    for (int i = 0; i < size; ++i)
+        sum += arr[i];
+    return static_cast<double>(sum / size);
+}
+
+int main_q1() {
+    int    ai[] = {1, 2, 3, 4, 5};
+    long   al[] = {10L, 20L, 30L, 40L};
+    double ad[] = {1.5, 2.5, 3.5};
+    char   ac[] = {'A', 'B', 'C'};
+
+    cout << "(Q1) avg int   = " << avgArray(ai, 5) << '
+';
+    cout << "(Q1) avg long  = " << avgArray(al, 4) << '
+';
+    cout << "(Q1) avg double= " << avgArray(ad, 3) << '
+';
+    cout << "(Q1) avg char  = " << avgArray(ac, 3) << " (ASCII)
+";
+    return 0;
+}
+
+// -------------------------------------------------
+// Q2 – Queue template (no exceptions)
+// File: q2_queue_template.cpp
+// -------------------------------------------------
+
+template <class T, int CAPACITY>
+class Queue {
+private:
+    T   data[CAPACITY];
+    int head;  // index of next item to remove
+    int tail;  // index of next free slot to insert
+public:
+    Queue() : head(0), tail(0) {}
+
+    void push(const T& item) {
+        data[tail] = item;
+        tail = (tail + 1) % CAPACITY;
+    }
+
+    T pop() {
+        T item = data[head];
+        head = (head + 1) % CAPACITY;
+        return item;
+    }
+};
+
+int main_q2() {
+    cout << "
+(Q2) basic Queue template demo
+";
+    Queue<int, 5> qi;
+    qi.push(1); qi.push(2); qi.push(3);
+    cout << "int queue: " << qi.pop() << ' ' << qi.pop() << ' ' << qi.pop() << '
+';
+
+    Queue<double, 5> qd;
+    qd.push(1.1); qd.push(2.2);
+    cout << "double queue: " << qd.pop() << ' ' << qd.pop() << '
+';
+
+    Queue<char, 5> qc;
+    qc.push('A'); qc.push('B'); qc.push('C');
+    cout << "char queue: " << qc.pop() << ' ' << qc.pop() << ' ' << qc.pop() << '
+';
+    return 0;
+}
+
+// -------------------------------------------------
+// Q3 – SafeQueue template with exceptions
+// File: q3_safequeue_exceptions.cpp
+// -------------------------------------------------
+
+class QueueOverflow : public runtime_error {
+public:
+    QueueOverflow() : runtime_error("Queue overflow") {}
+};
+class QueueUnderflow : public runtime_error {
+public:
+    QueueUnderflow() : runtime_error("Queue underflow") {}
+};
+
+template <class T, int CAPACITY>
+class SafeQueue {
+private:
+    T   data[CAPACITY];
+    int head;
+    int tail;
+    int count;
+public:
+    SafeQueue() : head(0), tail(0), count(0) {}
+
+    void push(const T& item) {
+        if (count >= CAPACITY) throw QueueOverflow();
+        data[tail] = item;
+        tail = (tail + 1) % CAPACITY;
+        ++count;
+    }
+
+    T pop() {
+        if (count <= 0) throw QueueUnderflow();
+        T item = data[head];
+        head = (head + 1) % CAPACITY;
+        --count;
+        return item;
+    }
+
+    bool empty() const { return count == 0; }
+    int  size()  const { return count; }
+};
+
+int main_q3() {
+    cout << "
+(Q3) SafeQueue with exceptions (interactive)
+";
+    SafeQueue<int, 3> q;
+    char choice; int val;
+    cout << "Commands: i=insert, r=remove, q=quit
+";
+    do {
+        cout << "Command (i/r/q): ";
+        cin >> choice;
+        try {
+            if (choice == 'i') {
+                cout << "Value: "; cin >> val;
+                q.push(val);
+            } else if (choice == 'r') {
+                int x = q.pop();
+                cout << "Removed: " << x << '
+';
+            }
+        } catch (const exception& e) {
+            cout << "Error: " << e.what() << '
+';
+        }
+    } while (choice != 'q');
+    return 0;
+}
+
+// -------------------------------------------------
+// Q4 – swaps() template
+// File: q4_swaps_template.cpp
+// -------------------------------------------------
+
+template <class T>
+void swaps(T& a, T& b) {
+    T temp = a; a = b; b = temp;
+}
+
+int main_q4() {
+    cout << "
+(Q4) swaps() template demo
+";
+    int    i1=10, i2=20;
+    double d1=1.5, d2=2.5;
+    char   c1='X', c2='Y';
+    swaps(i1,i2); swaps(d1,d2); swaps(c1,c2);
+    cout << "ints: " << i1 << ' ' << i2 << '
+';
+    cout << "doubles: " << d1 << ' ' << d2 << '
+';
+    cout << "chars: " << c1 << ' ' << c2 << '
+';
+    return 0;
+}
+
+// -------------------------------------------------
+// Q5 – amax() template
+// File: q5_amax_template.cpp
+// -------------------------------------------------
+
+template <class T>
+T amax(const T arr[], int size) {
+    T maxv = arr[0];
+    for (int i = 1; i < size; ++i)
+        if (arr[i] > maxv) maxv = arr[i];
+    return maxv;
+}
+
+int main_q5() {
+    cout << "
+(Q5) amax() template demo
+";
+    int    ai[] = {1,7,3,9,2};
+    double ad[] = {1.1,3.3,2.2};
+    long   al[] = {100L,50L,300L};
+    cout << "max int   = " << amax(ai,5) << '
+';
+    cout << "max double= " << amax(ad,3) << '
+';
+    cout << "max long  = " << amax(al,3) << '
+';
+    return 0;
+}
+
+// -------------------------------------------------
+// Q6 – templated safearay
+// File: q6_safearay_template.cpp
+// -------------------------------------------------
+
+template <class T, int MAX>
+class safearay {
+private:
+    T arr[MAX];
+public:
+    safearay() { for (int i=0;i<MAX;++i) arr[i]=T(); }
+    T& operator[](int i) {
+        if (i<0 || i>=MAX) { cout << "Index out of range
+"; exit(1); }
+        return arr[i];
+    }
+    const T& operator[](int i) const {
+        if (i<0 || i>=MAX) { cout << "Index out of range
+"; exit(1); }
+        return arr[i];
+    }
+};
+
+int main_q6() {
+    cout << "
+(Q6) safearay template demo
+";
+    safearay<int,5> si; safearay<double,5> sd;
+    for (int i=0;i<5;++i){ si[i]=i*10; sd[i]=i*0.5; }
+    cout << "int safearay: "; for (int i=0;i<5;++i) cout << si[i] << ' '; cout << '
+';
+    cout << "double safearay: "; for (int i=0;i<5;++i) cout << sd[i] << ' '; cout << '
+';
+    return 0;
+}
+
+// -------------------------------------------------
+// Q7 – templated frac class (integer numerator/denominator)
+// File: q7_frac_template.cpp
+// -------------------------------------------------
+
+template <class T>
+class frac {
+private:
+    T num;
+    T den;
+    void lowterms() {
+        long tnum = (num < 0) ? -num : num;
+        long tden = den;
+        if (tnum == 0) { den = 1; return; }
+        long temp;
+        while (tden != 0) {
+            temp = tnum % tden;
+            tnum = tden; tden = temp;
+        }
+        long gcd = tnum;
+        num /= gcd; den /= gcd;
+        if (den < 0) { den = -den; num = -num; }
+    }
+public:
+    frac(T n=0, T d=1) : num(n), den(d) {
+        if (den == 0) { cout << "Denominator zero!
+"; exit(1); }
+        lowterms();
+    }
+    void get() {
+        char ch; cout << "Enter fraction (n/d): ";
+        cin >> num >> ch >> den;
+        if (den == 0) { cout << "Denominator zero!
+"; exit(1); }
+        lowterms();
+    }
+    void show() const { cout << num << '/' << den; }
+    frac operator+(const frac& f2) const {
+        return frac(num*f2.den + den*f2.num, den*f2.den);
+    }
+    frac operator-(const frac& f2) const {
+        return frac(num*f2.den - den*f2.num, den*f2.den);
+    }
+    frac operator*(const frac& f2) const {
+        return frac(num*f2.num, den*f2.den);
+    }
+    frac operator/(const frac& f2) const {
+        if (f2.num == 0) { cout << "Divide by zero fraction!
+"; exit(1); }
+        return frac(num*f2.den, den*f2.num);
+    }
+};
+
+int main_q7() {
+    cout << "
+(Q7) frac<T> four-function calculator (int)
+";
+    frac<int> f1, f2, f3; char op; char cont='y';
+    while (cont=='y'||cont=='Y') {
+        f1.get(); f2.get(); cout << "Operator (+,-,*,/): "; cin >> op;
+        switch(op) {
+        case '+': f3=f1+f2; break;
+        case '-': f3=f1-f2; break;
+        case '*': f3=f1*f2; break;
+        case '/': f3=f1/f2; break;
+        default: cout << "Unknown op
+"; continue;
+        }
+        cout << "Result: "; f3.show(); cout << '
+';
+        cout << "More? (y/n): "; cin >> cont;
+    }
+    return 0;
+}
+
+// -------------------------------------------------
+// Q8 – safearay with exception class (ARROVER3 style)
+// File: q8_safearay_exception.cpp
+// -------------------------------------------------
+
+class IndexError : public runtime_error {
+public:
+    IndexError() : runtime_error("safearay index out of range") {}
+};
+
+class safearayX {
+private:
+    enum { MAX = 100 };
+    int arr[MAX];
+public:
+    safearayX() { for (int i=0;i<MAX;++i) arr[i]=0; }
+    int& operator[](int i) {
+        if (i<0 || i>=MAX) throw IndexError();
+        return arr[i];
+    }
+    const int& operator[](int i) const {
+        if (i<0 || i>=MAX) throw IndexError();
+        return arr[i];
+    }
+};
+
+int main_q8() {
+    cout << "
+(Q8) safearayX with exception
+";
+    safearayX sa;
+    try {
+        sa[0] = 10; sa[99] = 20;
+        cout << "sa[0]=" << sa[0] << ", sa[99]=" << sa[99] << '
+';
+        cout << "Access sa[150] (should throw)
+";
+        sa[150] = 5;
+    } catch (const exception& e) {
+        cout << "Caught: " << e.what() << '
+';
+    }
+    return 0;
+}
+
+// -------------------------------------------------
+// Q9 – safearay with index value in exception
+// File: q9_safearay_index_report.cpp
+// -------------------------------------------------
+
+class IndexErrorVal : public runtime_error {
+    int index;
+public:
+    IndexErrorVal(int i) : runtime_error("safearay index out of range"), index(i) {}
+    int getIndex() const { return index; }
+};
+
+class safearayXV {
+private:
+    enum { MAX = 100 };
+    int arr[MAX];
+public:
+    safearayXV() { for (int i=0;i<MAX;++i) arr[i]=0; }
+    int& operator[](int i) {
+        if (i<0 || i>=MAX) throw IndexErrorVal(i);
+        return arr[i];
+    }
+    const int& operator[](int i) const {
+        if (i<0 || i>=MAX) throw IndexErrorVal(i);
+        return arr[i];
+    }
+};
+
+int main_q9() {
+    cout << "
+(Q9) safearayXV with index reporting
+";
+    safearayXV sa;
+    try {
+        sa[10] = 42;
+        cout << "sa[10]=" << sa[10] << '
+';
+        cout << "Access sa[-5] (should throw)
+";
+        sa[-5] = 7;
+    } catch (const IndexErrorVal& e) {
+        cout << "Caught: " << e.what() << ", index=" << e.getIndex() << '
+';
+    }
+    return 0;
+}
+
+// -------------------------------------------------
+// Q10 – Distance with exceptions for bad input (ENGLERR-like skeleton)
+// File: q10_distance_exceptions.cpp
+// -------------------------------------------------
+
+class DistError : public runtime_error {
+public:
+    DistError(const string& msg) : runtime_error(msg) {}
+};
+
+class DistanceE {
+private:
+    int feet;
+    float inches;
+    void normalize() {
+        if (inches >= 12.0f) {
+            feet += static_cast<int>(inches / 12.0f);
+            inches = fmod(inches, 12.0f);
+        }
+        if (inches < 0.0f || feet < 0) throw DistError("Negative distance");
+    }
+public:
+    DistanceE() : feet(0), inches(0.0f) {}
+    DistanceE(int f, float in) : feet(f), inches(in) {
+        if (in < 0.0f || in >= 12.0f) throw DistError("Ctor: inches out of range");
+        if (f < 0) throw DistError("Ctor: feet negative");
+    }
+
+    void getdist() {
+        while (true) {
+            try {
+                cout << "Enter feet (int) and inches (0-11.99): ";
+                if (!(cin >> feet)) {
+                    cin.clear();
+                    cin.ignore(1000, '
+');
+                    throw DistError("feet not integer");
+                }
+                if (!(cin >> inches)) {
+                    cin.clear();
+                    cin.ignore(1000, '
+');
+                    throw DistError("inches not number");
+                }
+                if (feet < 0) throw DistError("feet negative");
+                if (inches < 0.0f || inches >= 12.0f)
+                    throw DistError("inches out of range");
+                break;
+            } catch (const DistError& e) {
+                cout << "Input error: " << e.what() << "; try again.
+";
+            }
+        }
+    }
+
+    void showdist() const {
+        cout << feet << "'-" << inches << '"';
+    }
+};
+
+int main_q10() {
+    cout << "
+(Q10) DistanceE input with exceptions
+";
+    DistanceE d;
+    d.getdist();
+    cout << "You entered: "; d.showdist(); cout << '
+';
+    return 0;
+}
+
+// -------------------------------------------------
+// Q11 – STRPLUS with exceptions on too-long strings
+// File: q11_strplus_exceptions.cpp
+// -------------------------------------------------
+
+class StringError : public runtime_error {
+public:
+    StringError(const string& msg) : runtime_error(msg) {}
+};
+
+class StringPlus {
+private:
+    enum { SZ = 80 };
+    char str[SZ];
+public:
+    StringPlus() { str[0] = ' '; }
+    StringPlus(const char* s) {
+        if (strlen(s) >= SZ)
+            throw StringError("Ctor: initialization string too long");
+        strcpy(str, s);
+    }
+
+    void show() const { cout << str; }
+    const char* get() const { return str; }
+
+    StringPlus operator+(const StringPlus& s2) const {
+        if (strlen(str) + strlen(s2.str) >= SZ)
+            throw StringError("operator+: concatenation result too long");
+        StringPlus temp;
+        strcpy(temp.str, str);
+        strcat(temp.str, s2.str);
+        return temp;
+    }
+};
+
+int main_q11() {
+    cout << "
+(Q11) StringPlus exceptions demo
+";
+    try {
+        StringPlus s1("Hello"), s2(" World"), s3;
+        s3 = s1 + s2;
+        cout << "s1 + s2 = "; s3.show(); cout << '
+';
+        const char* longStr = "This is a very long string that will overflow the SZ buffer if used";
+        StringPlus bad(longStr);
+    } catch (const StringError& e) {
+        cout << "Caught: " << e.what() << '
+';
+    }
+    return 0;
+}
+
+// -------------------------------------------------
+// Q12 – dofile class with internal exception class for file errors
+// File: q12_dofile_exceptions.cpp
+// -------------------------------------------------
+
+class dofile {
+public:
+    class FileError : public runtime_error {
+    public:
+        FileError(const string& msg) : runtime_error(msg) {}
+    };
+private:
+    fstream file;
+    string  fname;
+public:
+    dofile(const string& filename, ios::openmode mode) : fname(filename) {
+        file.open(fname.c_str(), mode);
+        if (!file)
+            throw FileError("Cannot open file: " + fname);
+    }
+
+    void rewind() {
+        file.clear();
+        file.seekg(0, ios::beg);
+        file.seekp(0, ios::beg);
+    }
+
+    void writeLine(const string& line) {
+        if (!file)
+            throw FileError("Write error on file: " + fname);
+        file << line << '
+';
+    }
+
+    bool readLine(string& line) {
+        if (!file)
+            throw FileError("Read error on file: " + fname);
+        if (!getline(file, line))
+            return false;
+        return true;
+    }
+
+    ~dofile() { file.close(); }
+};
+
+int main_q12() {
+    cout << "
+(Q12) dofile class demo (REWERR-like)
+";
+    try {
+        dofile df("testfile.txt", ios::in | ios::out | ios::trunc);
+        df.writeLine("First line");
+        df.writeLine("Second line");
+        df.rewind();
+        string line;
+        cout << "Contents of file:
+";
+        while (df.readLine(line))
+            cout << line << '
+';
+    } catch (const dofile::FileError& e) {
+        cout << "File error: " << e.what() << '
+';
+    }
+    return 0;
+}
+

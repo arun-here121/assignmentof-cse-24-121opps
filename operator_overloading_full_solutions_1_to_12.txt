@@ -1,0 +1,824 @@
+// =============================
+// Q1 – ENGLPLUS Distance with operator-
+// File: q1_englplus_distance_minus.cpp
+// =============================
+#include <iostream>
+using namespace std;
+
+class Distance {
+private:
+    int feet;
+    float inches;
+public:
+    Distance() : feet(0), inches(0.0f) {}
+    Distance(int ft, float in) : feet(ft), inches(in) {}
+
+    void getdist() {
+        cout << "Enter feet: ";
+        cin >> feet;
+        cout << "Enter inches: ";
+        cin >> inches;
+    }
+
+    void showdist() const {
+        cout << feet << "'-" << inches << '"';
+    }
+
+    Distance operator+(const Distance& d2) const {
+        int f = feet + d2.feet;
+        float in = inches + d2.inches;
+        if (in >= 12.0f) {
+            in -= 12.0f;
+            ++f;
+        }
+        return Distance(f, in);
+    }
+
+    // Q1: operator- (assume first >= second, no negative distance)
+    Distance operator-(const Distance& d2) const {
+        float total1 = feet * 12.0f + inches;
+        float total2 = d2.feet * 12.0f + d2.inches;
+        float diff = total1 - total2;
+        int f = static_cast<int>(diff / 12.0f);
+        float in = diff - f * 12.0f;
+        return Distance(f, in);
+    }
+};
+
+int main_q1() {
+    Distance d1, d2, d3;
+    cout << "[Q1] Distance with operator-" << endl;
+    cout << "Enter first distance:\n";
+    d1.getdist();
+    cout << "Enter second distance (smaller or equal):\n";
+    d2.getdist();
+
+    d3 = d1 - d2;
+    cout << "d1 - d2 = ";
+    d3.showdist();
+    cout << endl;
+    return 0;
+}
+
+
+// =============================
+// Q2 – STRPLUS string with operator+=
+// File: q2_strplus_plus_equal.cpp
+// =============================
+#include <cstring>
+
+class StringPlus {
+private:
+    enum { SZ = 80 };
+    char str[SZ];
+public:
+    StringPlus() { str[0] = '\0'; }
+    StringPlus(const char* s) { strncpy(str, s, SZ-1); str[SZ-1] = '\0'; }
+
+    void show() const { cout << str; }
+
+    // Q2: operator+= for concatenation (supports chaining)
+    StringPlus& operator+=(const StringPlus& s2) {
+        size_t len1 = strlen(str);
+        size_t len2 = strlen(s2.str);
+        size_t maxCopy = (SZ - 1 > len1) ? (SZ - 1 - len1) : 0;
+        strncat(str, s2.str, maxCopy);
+        str[SZ-1] = '\0';
+        return *this;
+    }
+};
+
+int main_q2() {
+    cout << "\n[Q2] STRPLUS with operator+=\n";
+    StringPlus s1("Hello"), s2(" World");
+    StringPlus s3;
+
+    cout << "Before: s1 = "; s1.show(); cout << endl;
+    s1 += s2;
+    cout << "After s1 += s2: s1 = "; s1.show(); cout << endl;
+    s3 = s1 += s2;
+    cout << "After s3 = s1 += s2:\n";
+    cout << "s1 = "; s1.show(); cout << endl;
+    cout << "s3 = "; s3.show(); cout << endl;
+    return 0;
+}
+
+
+// =============================
+// Q3 – time class with operator+
+// File: q3_time_plus.cpp
+// =============================
+#include <iomanip>
+
+class TimePlus {
+private:
+    int hrs, mins, secs;
+public:
+    TimePlus() : hrs(0), mins(0), secs(0) {}
+    TimePlus(int h, int m, int s) : hrs(h), mins(m), secs(s) {}
+
+    void getTime() {
+        cout << "Enter hours minutes seconds: ";
+        cin >> hrs >> mins >> secs;
+    }
+
+    void showTime() const {
+        cout << setfill('0') << setw(2) << hrs << ':'
+             << setw(2) << mins << ':'
+             << setw(2) << secs;
+    }
+
+    // Q3: overloaded + operator
+    TimePlus operator+(const TimePlus& t2) const {
+        int s = secs + t2.secs;
+        int m = mins + t2.mins;
+        int h = hrs + t2.hrs;
+        if (s >= 60) { s -= 60; ++m; }
+        if (m >= 60) { m -= 60; ++h; }
+        return TimePlus(h, m, s);
+    }
+};
+
+int main_q3() {
+    cout << "\n[Q3] time with operator+\n";
+    TimePlus t1, t2, t3;
+    cout << "Enter first time:\n";
+    t1.getTime();
+    cout << "Enter second time:\n";
+    t2.getTime();
+    t3 = t1 + t2;
+    cout << "t1 + t2 = ";
+    t3.showTime();
+    cout << endl;
+    return 0;
+}
+
+
+// =============================
+// Q4 – Int class with overflow-checked +, -, *, /
+// File: q4_int_safe_operators.cpp
+// =============================
+#include <limits>
+#include <cstdlib>
+
+class IntSafe {
+private:
+    int value;
+    static void checkOverflow(long double v) {
+        long double maxInt = static_cast<long double>(numeric_limits<int>::max());
+        long double minInt = static_cast<long double>(numeric_limits<int>::min());
+        if (v > maxInt || v < minInt) {
+            cout << "Overflow error in IntSafe arithmetic. Terminating.\n";
+            exit(1);
+        }
+    }
+public:
+    IntSafe() : value(0) {}
+    IntSafe(int v) : value(v) {}
+
+    int get() const { return value; }
+
+    IntSafe operator+(const IntSafe& other) const {
+        long double tmp = static_cast<long double>(value) +
+                          static_cast<long double>(other.value);
+        checkOverflow(tmp);
+        return IntSafe(static_cast<int>(tmp));
+    }
+
+    IntSafe operator-(const IntSafe& other) const {
+        long double tmp = static_cast<long double>(value) -
+                          static_cast<long double>(other.value);
+        checkOverflow(tmp);
+        return IntSafe(static_cast<int>(tmp));
+    }
+
+    IntSafe operator*(const IntSafe& other) const {
+        long double tmp = static_cast<long double>(value) *
+                          static_cast<long double>(other.value);
+        checkOverflow(tmp);
+        return IntSafe(static_cast<int>(tmp));
+    }
+
+    IntSafe operator/(const IntSafe& other) const {
+        if (other.value == 0) {
+            cout << "Division by zero in IntSafe. Terminating.\n";
+            exit(1);
+        }
+        long double tmp = static_cast<long double>(value) /
+                          static_cast<long double>(other.value);
+        checkOverflow(tmp);
+        return IntSafe(static_cast<int>(tmp));
+    }
+};
+
+int main_q4() {
+    cout << "\n[Q4] IntSafe with overflow checking\n";
+    IntSafe a(100000), b(30000), c;
+    c = a + b; cout << "a + b = " << c.get() << endl;
+    c = a - b; cout << "a - b = " << c.get() << endl;
+    c = a * b; cout << "a * b = " << c.get() << endl;
+    c = a / b; cout << "a / b = " << c.get() << endl;
+    return 0;
+}
+
+
+// =============================
+// Q5 – time class with prefix/postfix ++ and --
+// File: q5_time_inc_dec.cpp
+// =============================
+
+class TimeIncDec {
+private:
+    int hrs, mins, secs;
+    void normalize() {
+        long total = hrs * 3600L + mins * 60L + secs;
+        if (total < 0) total = 0;
+        hrs  = static_cast<int>(total / 3600);
+        total %= 3600;
+        mins = static_cast<int>(total / 60);
+        secs = static_cast<int>(total % 60);
+    }
+public:
+    TimeIncDec() : hrs(0), mins(0), secs(0) {}
+    TimeIncDec(int h, int m, int s) : hrs(h), mins(m), secs(s) { normalize(); }
+
+    void getTime() {
+        cout << "Enter hours minutes seconds: ";
+        cin >> hrs >> mins >> secs;
+        normalize();
+    }
+
+    void showTime() const {
+        cout << setfill('0') << setw(2) << hrs << ':'
+             << setw(2) << mins << ':'
+             << setw(2) << secs;
+    }
+
+    TimeIncDec operator++() {
+        ++secs; normalize(); return *this;
+    }
+
+    TimeIncDec operator++(int) {
+        TimeIncDec temp(*this); ++secs; normalize(); return temp;
+    }
+
+    TimeIncDec operator--() {
+        --secs; normalize(); return *this;
+    }
+
+    TimeIncDec operator--(int) {
+        TimeIncDec temp(*this); --secs; normalize(); return temp;
+    }
+};
+
+int main_q5() {
+    cout << "\n[Q5] time with ++ and --\n";
+    TimeIncDec t1(1, 59, 58);
+    cout << "Initial t1: "; t1.showTime(); cout << endl;
+    cout << "Prefix ++t1: "; (++t1).showTime(); cout << endl;
+    cout << "Postfix t1++ (returned): "; (t1++).showTime(); cout << endl;
+    cout << "After t1++ t1: "; t1.showTime(); cout << endl;
+    cout << "Prefix --t1: "; (--t1).showTime(); cout << endl;
+    cout << "Postfix t1-- (returned): "; (t1--).showTime(); cout << endl;
+    cout << "After t1-- t1: "; t1.showTime(); cout << endl;
+    return 0;
+}
+
+
+// =============================
+// Q6 – time with operator- (time-time) and operator* (time*float)
+// File: q6_time_sub_mul.cpp
+// =============================
+
+class TimeSubMul {
+private:
+    long totalSeconds;
+    void fromHMS(int h, int m, int s) {
+        totalSeconds = h * 3600L + m * 60L + s;
+        if (totalSeconds < 0) totalSeconds = 0;
+    }
+public:
+    TimeSubMul() : totalSeconds(0) {}
+    TimeSubMul(int h, int m, int s) { fromHMS(h, m, s); }
+
+    void getTime() {
+        int h, m, s;
+        cout << "Enter hours minutes seconds: ";
+        cin >> h >> m >> s;
+        fromHMS(h, m, s);
+    }
+
+    void showTime() const {
+        long t = totalSeconds;
+        int h = static_cast<int>(t / 3600); t %= 3600;
+        int m = static_cast<int>(t / 60);
+        int s = static_cast<int>(t % 60);
+        cout << setfill('0') << setw(2) << h << ':'
+             << setw(2) << m << ':'
+             << setw(2) << s;
+    }
+
+    TimeSubMul operator-(const TimeSubMul& t2) const {
+        long diff = totalSeconds - t2.totalSeconds;
+        if (diff < 0) diff = 0;
+        TimeSubMul tmp; tmp.totalSeconds = diff; return tmp;
+    }
+
+    TimeSubMul operator*(float f) const {
+        long res = static_cast<long>(totalSeconds * f);
+        if (res < 0) res = 0;
+        TimeSubMul tmp; tmp.totalSeconds = res; return tmp;
+    }
+};
+
+int main_q6() {
+    cout << "\n[Q6] time with - and *\n";
+    TimeSubMul t1(2, 30, 0), t2(1, 45, 30), t3, t4;
+    cout << "t1 = "; t1.showTime(); cout << endl;
+    cout << "t2 = "; t2.showTime(); cout << endl;
+    t3 = t1 - t2; cout << "t1 - t2 = "; t3.showTime(); cout << endl;
+    t4 = t1 * 2.5f; cout << "t1 * 2.5 = "; t4.showTime(); cout << endl;
+    return 0;
+}
+
+
+// =============================
+// Q7 – fraction class with +, -, *, /, ==, !=
+// File: q7_fraction_overload.cpp
+// =============================
+
+class Fraction {
+private:
+    long num;
+    long den;
+    void lowterms() {
+        long tnum = (num < 0) ? -num : num;
+        long tden = den;
+        if (tnum == 0) { den = 1; return; }
+        long temp;
+        while (tden != 0) {
+            temp = tnum % tden;
+            tnum = tden;
+            tden = temp;
+        }
+        long gcd = tnum;
+        num /= gcd; den /= gcd;
+        if (den < 0) { den = -den; num = -num; }
+    }
+public:
+    Fraction(long n = 0, long d = 1) : num(n), den(d) {
+        if (den == 0) { cout << "Denominator zero!"; exit(1); }
+        lowterms();
+    }
+
+    void get() {
+        char ch;
+        cout << "Enter fraction (a/b): ";
+        cin >> num >> ch >> den;
+        if (den == 0) { cout << "Denominator zero!"; exit(1); }
+        lowterms();
+    }
+
+    void show() const { cout << num << '/' << den; }
+
+    Fraction operator+(const Fraction& f2) const {
+        long n = num * f2.den + den * f2.num;
+        long d = den * f2.den;
+        return Fraction(n, d);
+    }
+
+    Fraction operator-(const Fraction& f2) const {
+        long n = num * f2.den - den * f2.num;
+        long d = den * f2.den;
+        return Fraction(n, d);
+    }
+
+    Fraction operator*(const Fraction& f2) const {
+        long n = num * f2.num;
+        long d = den * f2.den;
+        return Fraction(n, d);
+    }
+
+    Fraction operator/(const Fraction& f2) const {
+        if (f2.num == 0) { cout << "Division by zero fraction!"; exit(1); }
+        long n = num * f2.den;
+        long d = den * f2.num;
+        return Fraction(n, d);
+    }
+
+    bool operator==(const Fraction& f2) const {
+        return (num == f2.num) && (den == f2.den);
+    }
+
+    bool operator!=(const Fraction& f2) const {
+        return !(*this == f2);
+    }
+};
+
+int main_q7() {
+    cout << "\n[Q7] four-function fraction calculator\n";
+    Fraction f1, f2, f3;
+    char op;
+    cout << "Enter 0/1 0/1 to quit.\n";
+    while (true) {
+        cout << "Enter first fraction: "; f1.get();
+        cout << "Enter second fraction: "; f2.get();
+        if (f1 == Fraction(0,1) && f2 == Fraction(0,1)) {
+            cout << "Exiting.\n"; break;
+        }
+        cout << "Enter operator (+ - * /): ";
+        cin >> op;
+        switch (op) {
+        case '+': f3 = f1 + f2; break;
+        case '-': f3 = f1 - f2; break;
+        case '*': f3 = f1 * f2; break;
+        case '/': f3 = f1 / f2; break;
+        default: cout << "Unknown operator.\n"; continue;
+        }
+        cout << "Result: "; f3.show(); cout << "\n\n";
+    }
+    return 0;
+}
+
+
+// =============================
+// Q8 – bMoney with +, -, *, / (no implicit conversions)
+// File: q8_bMoney_overload.cpp
+// =============================
+
+class bMoney {
+private:
+    long double amount;
+
+    static long double mstold(const char s[]) {
+        char temp[80];
+        int j = 0;
+        for (int i = 0; s[i] != '\0' && j < 79; ++i) {
+            if (isdigit(static_cast<unsigned char>(s[i])) || s[i] == '.')
+                temp[j++] = s[i];
+        }
+        temp[j] = '\0';
+        return strtold(temp, nullptr);
+    }
+
+    static void ldtoms(long double n, char s[]) {
+        sprintf(s, "$%.2Lf", n);
+    }
+public:
+    bMoney() : amount(0.0L) {}
+    explicit bMoney(const char s[]) { amount = mstold(s); }
+    explicit bMoney(long double a) : amount(a) {}
+
+    void getMoney() {
+        char s[80];
+        cout << "Enter money amount (e.g. $1234.56): ";
+        cin >> s;
+        amount = mstold(s);
+    }
+
+    void putMoney() const {
+        char s[80];
+        ldtoms(amount, s);
+        cout << s;
+    }
+
+    bMoney operator+(const bMoney& m2) const {
+        return bMoney(amount + m2.amount);
+    }
+
+    bMoney operator-(const bMoney& m2) const {
+        return bMoney(amount - m2.amount);
+    }
+
+    bMoney operator*(long double f) const {
+        return bMoney(amount * f);
+    }
+
+    long double operator/(const bMoney& m2) const {
+        if (m2.amount == 0.0L) {
+            cout << "Division by zero bMoney!\n"; exit(1);
+        }
+        return amount / m2.amount;
+    }
+
+    bMoney operator/(long double d) const {
+        if (d == 0.0L) {
+            cout << "Division by zero float!\n"; exit(1);
+        }
+        return bMoney(amount / d);
+    }
+};
+
+int main_q8() {
+    cout << "\n[Q8] bMoney arithmetic\n";
+    bMoney m1, m2; long double f;
+    char choice = 'y';
+    while (choice == 'y' || choice == 'Y') {
+        cout << "\nEnter first money value:\n"; m1.getMoney();
+        cout << "Enter second money value:\n"; m2.getMoney();
+        cout << "Enter floating-point number: "; cin >> f;
+
+        cout << "\nResults:\n";
+        bMoney sum = m1 + m2; cout << "m1 + m2 = "; sum.putMoney(); cout << endl;
+        bMoney diff = m1 - m2; cout << "m1 - m2 = "; diff.putMoney(); cout << endl;
+        bMoney prod = m1 * f; cout << "m1 * " << f << " = "; prod.putMoney(); cout << endl;
+        long double ratio = m1 / m2; cout << "m1 / m2 = " << ratio << endl;
+        bMoney quot = m1 / f; cout << "m1 / " << f << " = "; quot.putMoney(); cout << endl;
+
+        cout << "\nMore operations? (y/n): "; cin >> choice;
+    }
+    return 0;
+}
+
+
+// =============================
+// Q9 – safearay with user-defined bounds
+// File: q9_safearray_bounds.cpp
+// =============================
+
+class safearray {
+private:
+    enum { MAX = 100 };
+    int arr[MAX];
+    int lower, upper; // user-visible bounds
+public:
+    safearray(int low, int high) : lower(low), upper(high) {
+        if (high < low || (high - low + 1) > MAX) {
+            cout << "Invalid bounds for safearray.\n"; exit(1);
+        }
+        for (int i = 0; i < MAX; ++i) arr[i] = 0;
+    }
+
+    int& operator[](int index) {
+        if (index < lower || index > upper) {
+            cout << "Index out of range: " << index << "\n";
+            exit(1);
+        }
+        return arr[index - lower];
+    }
+
+    const int& operator[](int index) const {
+        if (index < lower || index > upper) {
+            cout << "Index out of range (const): " << index << "\n";
+            exit(1);
+        }
+        return arr[index - lower];
+    }
+};
+
+int main_q9() {
+    cout << "\n[Q9] safearray with custom bounds\n";
+    int low = 100, high = 175;
+    safearray sa(low, high);
+    for (int i = low; i <= high; ++i) sa[i] = i - low;
+    cout << "sa[100] = " << sa[100] << ", sa[175] = " << sa[175] << endl;
+    return 0;
+}
+
+
+// =============================
+// Q10 – Polar class with operator+
+// File: q10_polar_plus.cpp
+// =============================
+#include <cmath>
+
+class Polar {
+private:
+    double r;     // radius
+    double theta; // angle in radians
+public:
+    Polar(double radius = 0.0, double angle = 0.0) : r(radius), theta(angle) {}
+
+    void get() {
+        cout << "Enter radius and angle (radians): ";
+        cin >> r >> theta;
+    }
+
+    void show() const {
+        cout << "(r=" << r << ", theta=" << theta << ")";
+    }
+
+    Polar operator+(const Polar& p2) const {
+        double x1 = r * cos(theta);
+        double y1 = r * sin(theta);
+        double x2 = p2.r * cos(p2.theta);
+        double y2 = p2.r * sin(p2.theta);
+        double xr = x1 + x2;
+        double yr = y1 + y2;
+        double rres = sqrt(xr * xr + yr * yr);
+        double thres = atan2(yr, xr);
+        return Polar(rres, thres);
+    }
+};
+
+int main_q10() {
+    cout << "\n[Q10] Polar + Polar\n";
+    Polar p1, p2, p3;
+    p1.get();
+    p2.get();
+    p3 = p1 + p2;
+    cout << "Result: "; p3.show(); cout << endl;
+    return 0;
+}
+
+
+// =============================
+// Q11 – sterling class with full operators and conversions
+// File: q11_sterling_class.cpp
+// =============================
+
+class sterling {
+private:
+    long pounds;
+    int shillings;
+    int pence;
+
+    void normalize() {
+        long total_pence = pounds * 20L * 12L + shillings * 12L + pence;
+        if (total_pence < 0) total_pence = 0;
+        pounds = static_cast<long>(total_pence / (20L * 12L));
+        total_pence %= 20L * 12L;
+        shillings = static_cast<int>(total_pence / 12L);
+        pence = static_cast<int>(total_pence % 12L);
+    }
+public:
+    sterling() : pounds(0), shillings(0), pence(0) {}
+
+    sterling(double decpounds) {
+        long total_pence = static_cast<long>(decpounds * 240.0 + 0.5);
+        pounds = static_cast<long>(total_pence / 240);
+        total_pence %= 240;
+        shillings = static_cast<int>(total_pence / 12);
+        pence = static_cast<int>(total_pence % 12);
+    }
+
+    sterling(long p, int s, int d) : pounds(p), shillings(s), pence(d) {
+        normalize();
+    }
+
+    void getSterling() {
+        char ch;
+        cout << "Enter amount (format p.s.d, e.g. 9.19.11): ";
+        cin >> pounds >> ch >> shillings >> ch >> pence;
+        normalize();
+    }
+
+    void putSterling() const {
+        cout << '\x9c' << pounds << '.' << shillings << '.' << pence;
+    }
+
+    operator double() const {
+        long total_pence = pounds * 240L + shillings * 12L + pence;
+        return static_cast<double>(total_pence) / 240.0;
+    }
+
+    sterling operator+(sterling s2) const {
+        return sterling(double(*this) + double(s2));
+    }
+
+    sterling operator-(sterling s2) const {
+        return sterling(double(*this) - double(s2));
+    }
+
+    sterling operator*(double x) const {
+        return sterling(double(*this) * x);
+    }
+
+    double operator/(sterling s2) const {
+        return double(*this) / double(s2);
+    }
+
+    sterling operator/(double x) const {
+        return sterling(double(*this) / x);
+    }
+};
+
+int main_q11() {
+    cout << "\n[Q11] sterling class demo\n";
+    sterling s1, s2, s3;
+    s1.getSterling();
+    s2.getSterling();
+    s3 = s1 + s2; cout << "s1 + s2 = "; s3.putSterling(); cout << endl;
+    s3 = s1 - s2; cout << "s1 - s2 = "; s3.putSterling(); cout << endl;
+    s3 = s1 * 2.5; cout << "s1 * 2.5 = "; s3.putSterling(); cout << endl;
+    double ratio = s1 / s2; cout << "s1 / s2 = " << ratio << endl;
+    s3 = s1 / 2.0; cout << "s1 / 2 = "; s3.putSterling(); cout << endl;
+    return 0;
+}
+
+
+// =============================
+// Q12 – bMoney and sterling conversion
+// File: q12_bMoney_sterling_convert.cpp
+// Assumption: 1 pound (£1.0.0) = $50.00
+// =============================
+
+class bMoney2 {
+private:
+    long double amount;
+    static long double mstold(const char s[]) {
+        char temp[80]; int j = 0;
+        for (int i = 0; s[i] != '\0' && j < 79; ++i) {
+            if (isdigit(static_cast<unsigned char>(s[i])) || s[i] == '.') temp[j++] = s[i];
+        }
+        temp[j] = '\0';
+        return strtold(temp, nullptr);
+    }
+    static void ldtoms(long double n, char s[]) {
+        sprintf(s, "$%.2Lf", n);
+    }
+public:
+    bMoney2() : amount(0.0L) {}
+    explicit bMoney2(long double a) : amount(a) {}
+    explicit bMoney2(const char s[]) { amount = mstold(s); }
+
+    void getMoney() {
+        char s[80];
+        cout << "Enter dollars (e.g. $1234.56): ";
+        cin >> s;
+        amount = mstold(s);
+    }
+
+    void putMoney() const {
+        char s[80]; ldtoms(amount, s); cout << s;
+    }
+
+    long double getAmount() const { return amount; }
+};
+
+class sterling2 {
+private:
+    long pounds; int shillings; int pence;
+    void normalize() {
+        long total_pence = pounds * 240L + shillings * 12L + pence;
+        if (total_pence < 0) total_pence = 0;
+        pounds = total_pence / 240L; total_pence %= 240L;
+        shillings = static_cast<int>(total_pence / 12L);
+        pence = static_cast<int>(total_pence % 12L);
+    }
+public:
+    sterling2() : pounds(0), shillings(0), pence(0) {}
+    sterling2(long p, int s, int d) : pounds(p), shillings(s), pence(d) { normalize(); }
+    explicit sterling2(double decpounds) {
+        long total_pence = static_cast<long>(decpounds * 240.0 + 0.5);
+        pounds = total_pence / 240L; total_pence %= 240L;
+        shillings = static_cast<int>(total_pence / 12L);
+        pence = static_cast<int>(total_pence % 12L);
+    }
+
+    void getSterling() {
+        char ch;
+        cout << "Enter sterling (p.s.d, e.g. 9.19.11): ";
+        cin >> pounds >> ch >> shillings >> ch >> pence;
+        normalize();
+    }
+
+    void putSterling() const {
+        cout << '\x9c' << pounds << '.' << shillings << '.' << pence;
+    }
+
+    double toDecimalPounds() const {
+        long total_pence = pounds * 240L + shillings * 12L + pence;
+        return static_cast<double>(total_pence) / 240.0;
+    }
+};
+
+// Conversion: 1 pound = $50
+
+// sterling2 -> bMoney2
+bMoney2 sterlingToMoney(const sterling2& s) {
+    double decp = s.toDecimalPounds();
+    long double dollars = static_cast<long double>(decp * 50.0); // £1 -> $50
+    return bMoney2(dollars);
+}
+
+// bMoney2 -> sterling2
+sterling2 moneyToSterling(const bMoney2& m) {
+    long double dollars = m.getAmount();
+    double decp = static_cast<double>(dollars / 50.0L);
+    return sterling2(decp);
+}
+
+int main_q12() {
+    cout << "\n[Q12] bMoney <-> sterling conversions\n";
+    cout << "1 pound = $50.00 assumed.\n";
+    int choice;
+    cout << "Enter 1 for dollars->sterling, 2 for sterling->dollars: ";
+    cin >> choice;
+
+    if (choice == 1) {
+        bMoney2 m;
+        m.getMoney();
+        sterling2 s = moneyToSterling(m);
+        cout << "Equivalent sterling: "; s.putSterling(); cout << endl;
+    } else if (choice == 2) {
+        sterling2 s;
+        s.getSterling();
+        bMoney2 m = sterlingToMoney(s);
+        cout << "Equivalent dollars: "; m.putMoney(); cout << endl;
+    } else {
+        cout << "Invalid option.\n";
+    }
+    return 0;
+}
+

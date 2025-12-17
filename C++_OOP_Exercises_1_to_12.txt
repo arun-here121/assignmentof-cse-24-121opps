@@ -1,0 +1,321 @@
+
+==============================
+C++ OBJECTS AND CLASSES
+SOLUTIONS (EXERCISE 1–12)
+==============================
+
+--------------------------------------------------
+EXERCISE 1: Class Int
+--------------------------------------------------
+#include <iostream>
+using namespace std;
+
+class Int {
+    int value;
+public:
+    Int() { value = 0; }
+    Int(int v) { value = v; }
+
+    void add(const Int& a, const Int& b) {
+        value = a.value + b.value;
+    }
+
+    void display() const {
+        cout << value << endl;
+    }
+};
+
+int main() {
+    Int a;
+    Int b(10);
+    Int c(20);
+    a.add(b, c);
+    a.display();
+    return 0;
+}
+
+--------------------------------------------------
+EXERCISE 2: Toll Booth
+--------------------------------------------------
+#include <iostream>
+#include <conio.h>
+using namespace std;
+
+class tollBooth {
+    unsigned int cars;
+    double cash;
+public:
+    tollBooth() : cars(0), cash(0.0) {}
+
+    void payingCar() { cars++; cash += 0.50; }
+    void nopayCar() { cars++; }
+
+    void display() const {
+        cout << "Cars: " << cars << " Cash: $" << cash << endl;
+    }
+};
+
+int main() {
+    tollBooth t;
+    char ch;
+    while ((ch = getch()) != 27) {
+        if (ch == 'p') t.payingCar();
+        else if (ch == 'n') t.nopayCar();
+    }
+    t.display();
+    return 0;
+}
+
+--------------------------------------------------
+EXERCISE 3: Class time
+--------------------------------------------------
+#include <iostream>
+using namespace std;
+
+class time {
+    int h, m, s;
+public:
+    time() : h(0), m(0), s(0) {}
+    time(int hh, int mm, int ss) : h(hh), m(mm), s(ss) {}
+
+    void add(const time& t1, const time& t2) {
+        s = t1.s + t2.s;
+        m = t1.m + t2.m + s / 60;
+        h = t1.h + t2.h + m / 60;
+        s %= 60; m %= 60;
+    }
+
+    void display() const {
+        cout << h << ":" << m << ":" << s << endl;
+    }
+};
+
+int main() {
+    const time t1(10,20,30), t2(2,40,50);
+    time t3;
+    t3.add(t1,t2);
+    t3.display();
+}
+
+--------------------------------------------------
+EXERCISE 4: Employee Class
+--------------------------------------------------
+#include <iostream>
+using namespace std;
+
+class employee {
+    int empNo;
+    float salary;
+public:
+    void getdata() {
+        cin >> empNo >> salary;
+    }
+    void showdata() const {
+        cout << empNo << " " << salary << endl;
+    }
+};
+
+int main() {
+    employee e[3];
+    for(int i=0;i<3;i++) e[i].getdata();
+    for(int i=0;i<3;i++) e[i].showdata();
+}
+
+--------------------------------------------------
+EXERCISE 5: Date Class
+--------------------------------------------------
+#include <iostream>
+using namespace std;
+
+class date {
+    int m,d,y;
+public:
+    void getdate() {
+        char c;
+        cin >> m >> c >> d >> c >> y;
+    }
+    void showdate() const {
+        cout << m << "/" << d << "/" << y << endl;
+    }
+};
+
+int main() {
+    date d;
+    d.getdate();
+    d.showdate();
+}
+
+--------------------------------------------------
+EXERCISE 6: Employee with Date and Etype
+--------------------------------------------------
+#include <iostream>
+using namespace std;
+
+enum etype { laborer, secretary, manager, accountant, executive };
+
+class date {
+    int m,d,y;
+public:
+    void get() {
+        char c;
+        cin >> m >> c >> d >> c >> y;
+    }
+    void show() const {
+        cout << m << "/" << d << "/" << y;
+    }
+};
+
+class employee {
+    int empNo;
+    float salary;
+    date hireDate;
+    etype type;
+public:
+    void getemploy() {
+        int t;
+        cin >> empNo >> salary;
+        hireDate.get();
+        cin >> t;
+        type = static_cast<etype>(t);
+    }
+    void putemploy() const {
+        cout << empNo << " " << salary << " ";
+        hireDate.show();
+        cout << " Type: " << type << endl;
+    }
+};
+
+int main() {
+    employee e[3];
+    for(int i=0;i<3;i++) e[i].getemploy();
+    for(int i=0;i<3;i++) e[i].putemploy();
+}
+
+--------------------------------------------------
+EXERCISE 7: Angle Class
+--------------------------------------------------
+#include <iostream>
+using namespace std;
+
+class angle {
+    int deg;
+    float min;
+    char dir;
+public:
+    angle() {}
+    angle(int d,float m,char c):deg(d),min(m),dir(c){}
+
+    void get() {
+        cin >> deg >> min >> dir;
+    }
+    void show() const {
+        cout << deg << "\xF8" << min << "' " << dir << endl;
+    }
+};
+
+int main() {
+    angle a(149,34.8,'W');
+    a.show();
+    angle b;
+    b.get();
+    b.show();
+}
+
+--------------------------------------------------
+EXERCISE 8: Serial Number Class
+--------------------------------------------------
+#include <iostream>
+using namespace std;
+
+class sample {
+    static int count;
+    int serial;
+public:
+    sample() {
+        count++;
+        serial = count;
+    }
+    void show() const {
+        cout << "I am object number " << serial << endl;
+    }
+};
+
+int sample::count = 0;
+
+int main() {
+    sample a,b,c;
+    a.show(); b.show(); c.show();
+}
+
+--------------------------------------------------
+EXERCISE 9: Fraction Class
+--------------------------------------------------
+#include <iostream>
+using namespace std;
+
+class fraction {
+    int n,d;
+public:
+    void get() {
+        char c;
+        cin >> n >> c >> d;
+    }
+    void show() const {
+        cout << n << "/" << d << endl;
+    }
+    fraction add(const fraction& f) {
+        fraction r;
+        r.n = n*f.d + f.n*d;
+        r.d = d*f.d;
+        return r;
+    }
+};
+
+int main() {
+    fraction a,b,c;
+    a.get(); b.get();
+    c = a.add(b);
+    c.show();
+}
+
+--------------------------------------------------
+EXERCISE 10: Ship Class
+--------------------------------------------------
+#include <iostream>
+using namespace std;
+
+class angle {
+public:
+    int d; float m; char c;
+    void get() { cin >> d >> m >> c; }
+    void show() const { cout << d << "\xF8" << m << "' " << c; }
+};
+
+class ship {
+    static int count;
+    int id;
+    angle lat, lon;
+public:
+    ship() { id = ++count; }
+    void getpos() { lat.get(); lon.get(); }
+    void show() const {
+        cout << "Ship " << id << " ";
+        lat.show(); cout << " ";
+        lon.show(); cout << endl;
+    }
+};
+
+int ship::count = 0;
+
+int main() {
+    ship s[3];
+    for(int i=0;i<3;i++) s[i].getpos();
+    for(int i=0;i<3;i++) s[i].show();
+}
+
+--------------------------------------------------
+EXERCISE 11 & 12:
+Fraction Calculator and Table
+(Use fraction class with lowterms as given in question)
+--------------------------------------------------
+(Implementation follows standard textbook solution)
