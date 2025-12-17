@@ -1,3 +1,0 @@
-
-OBJECTS AND CLASSES – SIMPLE EXPLANATION (Based on Robert Lafore, Object-Oriented Programming in C++, 4th Edition)
-
